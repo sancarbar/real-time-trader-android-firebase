@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "344359376555",
+    "firebase_url": "https://test-90da8.firebaseio.com",
+    "project_id": "test-90da8",
+    "storage_bucket": "test-90da8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:344359376555:android:69f15caab9d1aea0",
+        "android_client_info": {
+          "package_name": "com.platzi.realtimetrader"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "344359376555-19tekghnh42ckpn5iq8eg24iud58nlbn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABLB8NGWQgxykSMYsmY759L6m3IpZDWEw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
