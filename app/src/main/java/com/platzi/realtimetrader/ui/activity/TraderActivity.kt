@@ -15,8 +15,7 @@ import com.platzi.realtimetrader.ui.network.Callback
 import com.platzi.realtimetrader.ui.network.FirebaseService
 import kotlinx.android.synthetic.main.activity_main.*
 
-class TraderActivity : AppCompatActivity()
-{
+class TraderActivity : AppCompatActivity() {
 
     lateinit var firebaseService: FirebaseService
 
@@ -35,11 +34,9 @@ class TraderActivity : AppCompatActivity()
             Snackbar.make(view, getString(R.string.generating_new_cryptos), Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show()
 
-            firebaseService.getCryptos(object : Callback<List<Crypto>>
-            {
+            firebaseService.getCollectionItems("cryptos", object : Callback<List<Crypto>> {
 
-                override fun onSuccess(result: List<Crypto>)
-                {
+                override fun onSuccess(result: List<Crypto>) {
 
                     this@TraderActivity.runOnUiThread {
                         cryptosAdapter.cryptosList = result
@@ -47,8 +44,7 @@ class TraderActivity : AppCompatActivity()
                     }
                 }
 
-                override fun onFailed(exception: Exception)
-                {
+                override fun onFailed(exception: Exception) {
 
                 }
             })
@@ -60,8 +56,7 @@ class TraderActivity : AppCompatActivity()
         }
     }
 
-    private fun generateCryptoCurrenciesRandom()
-    {
+    private fun generateCryptoCurrenciesRandom() {
         val amount = (1..10).random()
 
     }
@@ -82,8 +77,7 @@ class TraderActivity : AppCompatActivity()
         }
     }
 
-    fun configureRecyclerView()
-    {
+    fun configureRecyclerView() {
         recyclerView.setHasFixedSize(true)
         val layoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = layoutManager
