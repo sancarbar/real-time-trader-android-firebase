@@ -35,7 +35,7 @@
       app:srcCompat="@drawable/ic_coin" />
 
   <EditText
-      android:id="@+id/editText"
+      android:id="@+id/nameEditText"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_margin="10dp"
@@ -56,6 +56,7 @@
       android:layout_margin="10dp"
       android:layout_marginBottom="72dp"
       android:layout_marginTop="8dp"
+      android:onClick="onStartClicked"
       android:padding="15dp"
       android:text="@string/start"
       android:textSize="16sp"
@@ -64,7 +65,7 @@
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintHorizontal_bias="0.842"
       app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/editText" />
+      app:layout_constraintTop_toBottomOf="@+id/nameEditText" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

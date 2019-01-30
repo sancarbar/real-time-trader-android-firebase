@@ -5,4 +5,7 @@
   <string name="name">Name</string>
   <string name="app_icon">app icon</string>
   <string name="start">Start</string>
+  <string name="generating_new_cryptos">generating new cryptos…</string>
+  <string name="buy">Buy</string>
+  <string name="available_message">available %s</string>
 </resources>
