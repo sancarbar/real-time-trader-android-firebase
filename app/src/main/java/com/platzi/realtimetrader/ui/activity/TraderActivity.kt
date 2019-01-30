@@ -13,7 +13,7 @@ import com.platzi.realtimetrader.ui.adapter.CryptosAdapter
 import com.platzi.realtimetrader.ui.model.Crypto
 import com.platzi.realtimetrader.ui.network.Callback
 import com.platzi.realtimetrader.ui.network.FirebaseService
-import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_trader.*
 
 class TraderActivity : AppCompatActivity() {
 
@@ -24,7 +24,7 @@ class TraderActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         firebaseService = FirebaseService(FirebaseFirestore.getInstance())
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_trader)
 
         val name = intent.extras!![NAME_KEY]
         Log.d("Developer", "name:   $name")
