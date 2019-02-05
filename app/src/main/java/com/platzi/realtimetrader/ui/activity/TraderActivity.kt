@@ -133,18 +133,21 @@ class TraderActivity : AppCompatActivity(), CryptosAdapterListener
 
     override fun onBuyCryptoClicked(crypto: Crypto)
     {
-        for (userCrypto in user!!.cryptosList!!)
+        if (crypto.available > 0)
         {
-            if (userCrypto.name == crypto.name)
+            for (userCrypto in user!!.cryptosList!!)
             {
-                userCrypto.available += 1
-                break
+                if (userCrypto.name == crypto.name)
+                {
+                    userCrypto.available += 1
+                    break
+                }
             }
-        }
-        crypto.available--
+            crypto.available--
 
-        firebaseService.updateUser(user!!, null)
-        firebaseService.updateCrypto(crypto)
+            firebaseService.updateUser(user!!, null)
+            firebaseService.updateCrypto(crypto)
+        }
     }
 
     fun reloadUserCryptos()
