@@ -2,28 +2,77 @@ package com.platzi.realtimetrader.ui.network
 
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
+import com.platzi.realtimetrader.ui.model.Crypto
+import com.platzi.realtimetrader.ui.model.User
 
 /**
  * @author Santiago Carrillo
  * 1/29/19.
  */
-class FirebaseService(val firebaseFirestore: FirebaseFirestore) {
+
+const val CRYPTO_COLLECTION_NAME = "cryptos"
+const val USERS_COLLECTION_NAME = "users"
+
+class FirebaseService(val firebaseFirestore: FirebaseFirestore)
+{
 
 
-    inline fun <reified T> getCollectionItems(collectionName: String, callback: Callback<List<T>>) {
-        firebaseFirestore.collection(collectionName)
-            .get()
-            .addOnSuccessListener { result ->
-                for (document in result) {
+    fun getCryptos(callback: Callback<List<Crypto>>)
+    {
+        firebaseFirestore.collection(CRYPTO_COLLECTION_NAME)
+                .get()
+                .addOnSuccessListener { result ->
+                    for (document in result)
+                    {
 
-                    val cryptosList: List<T> = result.toObjects(T::class.java)
-                    callback.onSuccess(cryptosList)
-                    break
+                        val cryptosList = result.toObjects(Crypto::class.java)
+                        callback.onSuccess(cryptosList)
+                        break
+                    }
                 }
-            }
-            .addOnFailureListener { exception ->
-                Log.w("Developer", "Error getting documents.", exception)
-                callback.onFailed(exception)
-            }
+                .addOnFailureListener { exception ->
+                    Log.w("Developer", "Error getting documents.", exception)
+                    callback.onFailed(exception)
+                }
+    }
+
+    fun setDocument(data: Any, collectionName: String, id: String, callbackVoid: CallbackVoid)
+    {
+        firebaseFirestore.collection(collectionName).document(id).set(data)
+                .addOnSuccessListener { callbackVoid.onSuccess() }
+                .addOnFailureListener { exception ->
+                    Log.w("Developer", "Error getting documents.", exception)
+                    callbackVoid.onFailed(exception)
+                }
+    }
+
+    fun findUserById(id: String, callback: Callback<User>)
+    {
+        firebaseFirestore.collection(USERS_COLLECTION_NAME).document(id)
+                .get()
+                .addOnSuccessListener { result ->
+                    callback.onSuccess(result.toObject(User::class.java)!!)
+                }
+                .addOnFailureListener { exception ->
+                    Log.w("Developer", "Error getting documents.", exception)
+                    callback.onFailed(exception)
+                }
+
+    }
+
+    fun updateUser(user: User, callback: Callback<User>?)
+    {
+        firebaseFirestore.collection(USERS_COLLECTION_NAME).document(user.username)
+                .update("cryptosList", user.cryptosList)
+                .addOnSuccessListener { result ->
+                    if (callback != null)
+                        callback.onSuccess(user)
+                }
+                .addOnFailureListener { exception ->
+                    Log.w("Developer", "Error getting documents.", exception)
+                    if (callback != null)
+                        callback.onFailed(exception)
+                }
+
     }
 }

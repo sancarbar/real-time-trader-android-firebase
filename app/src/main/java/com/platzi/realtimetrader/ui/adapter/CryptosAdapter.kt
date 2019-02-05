@@ -28,7 +28,7 @@ class CryptosAdapter : RecyclerView.Adapter<CryptosAdapter.ViewHolder>()
         val context = holder.itemView.context
         holder.available.text =
                 context.getString(R.string.available_message, crypto.available.toString())
-        Picasso.get().load(crypto.imageUrl).into(holder.image);
+        Picasso.get().load(crypto.imageUrl).into(holder.image)
     }
 
 
