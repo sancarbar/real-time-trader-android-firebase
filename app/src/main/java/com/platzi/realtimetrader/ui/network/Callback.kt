@@ -7,7 +7,7 @@ package com.platzi.realtimetrader.ui.network
 interface Callback<T>
 {
 
-    fun onSuccess(result: T)
+    fun onSuccess(result: T?)
 
     fun onFailed(exception: Exception)
 }

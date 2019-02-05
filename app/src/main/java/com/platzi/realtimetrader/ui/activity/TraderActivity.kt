@@ -3,8 +3,6 @@ package com.platzi.realtimetrader.ui.activity
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuItem
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -13,23 +11,25 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.FirebaseFirestore
 import com.platzi.realtimetrader.R
 import com.platzi.realtimetrader.ui.adapter.CryptosAdapter
+import com.platzi.realtimetrader.ui.adapter.CryptosAdapterListener
 import com.platzi.realtimetrader.ui.model.Crypto
 import com.platzi.realtimetrader.ui.model.User
 import com.platzi.realtimetrader.ui.network.Callback
 import com.platzi.realtimetrader.ui.network.FirebaseService
+import com.platzi.realtimetrader.ui.network.RealtimeDataListener
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_trader.*
 
-class TraderActivity : AppCompatActivity()
+class TraderActivity : AppCompatActivity(), CryptosAdapterListener
 {
 
     lateinit var firebaseService: FirebaseService
 
-    private val cryptosAdapter: CryptosAdapter = CryptosAdapter()
-
-    private var cryptosList: List<Crypto>? = null
+    private val cryptosAdapter: CryptosAdapter = CryptosAdapter(this)
 
     private var username: String? = null
+
+    var user: User? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?)
@@ -41,8 +41,6 @@ class TraderActivity : AppCompatActivity()
         username = intent.extras!![USERNAME_KEY]!!.toString()
         usernameTextView.text = username
 
-
-        Log.d("Developer", "username:  $username")
         configureRecyclerView()
         loadCryptos()
 
@@ -58,46 +56,45 @@ class TraderActivity : AppCompatActivity()
         firebaseService.getCryptos(object : Callback<List<Crypto>>
         {
 
-            override fun onSuccess(result: List<Crypto>)
+            override fun onSuccess(result: List<Crypto>?)
             {
                 this@TraderActivity.runOnUiThread {
-                    this@TraderActivity.cryptosList = result
 
-                    cryptosAdapter.cryptosList = result
+                    cryptosAdapter.cryptosList = result!!
                     cryptosAdapter.notifyDataSetChanged()
 
                     firebaseService.findUserById(username!!, object : Callback<User>
                     {
 
-                        override fun onSuccess(respones: User)
+                        override fun onSuccess(result: User?)
                         {
-                            Log.d("Developer", "User:  ${respones.username}")
-                            if (respones.cryptosList == null)
+                            user = result
+                            Log.d("Developer", "User:  ${result!!.username}")
+                            if (user!!.cryptosList == null)
                             {
 
                                 val userCryptoList = mutableListOf<Crypto>()
 
-                                for (crypto in cryptosList!!)
+                                for (crypto in cryptosAdapter.cryptosList)
                                 {
-                                    crypto.available = 0
-                                    userCryptoList.add(crypto)
-                                    addUserCryptoInfoRow(crypto)
+                                    val cryptoUser = Crypto()
+                                    cryptoUser.name = crypto.name
+                                    cryptoUser.available = 0
+                                    cryptoUser.imageUrl = crypto.imageUrl
+                                    userCryptoList.add(cryptoUser)
                                 }
 
-                                respones.cryptosList = mutableListOf()
-                                firebaseService.updateUser(respones, null)
-                            } else
-                            {
-                                for (crypto in cryptosList!!)
-                                {
-                                    addUserCryptoInfoRow(crypto)
-                                }
+                                user!!.cryptosList = userCryptoList
+                                firebaseService.updateUser(user!!, null)
                             }
+                            reloadUserCryptos()
+                            addRealtimeDatabaseListeners(user!!, cryptosAdapter.cryptosList)
                         }
 
                         override fun onFailed(exception: Exception)
                         {
                             Log.e("Developer", "error", exception)
+                            showGeneralServerErrorMessage()
                         }
 
                     })
@@ -106,7 +103,8 @@ class TraderActivity : AppCompatActivity()
 
             override fun onFailed(exception: Exception)
             {
-
+                Log.e("Developer", "error", exception)
+                showGeneralServerErrorMessage()
             }
         })
     }
@@ -115,25 +113,6 @@ class TraderActivity : AppCompatActivity()
     {
         val amount = (1..10).random()
 
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean
-    {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean
-    {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId)
-        {
-            R.id.action_settings -> true
-            else -> super.onOptionsItemSelected(item)
-        }
     }
 
     private fun configureRecyclerView()
@@ -151,4 +130,85 @@ class TraderActivity : AppCompatActivity()
         Picasso.get().load(crypto.imageUrl).into(view.findViewById<ImageView>(R.id.coinIcon))
         infoPanel.addView(view)
     }
+
+    override fun onBuyCryptoClicked(crypto: Crypto)
+    {
+        for (userCrypto in user!!.cryptosList!!)
+        {
+            if (userCrypto.name == crypto.name)
+            {
+                userCrypto.available += 1
+                break
+            }
+        }
+        crypto.available--
+
+        firebaseService.updateUser(user!!, null)
+        firebaseService.updateCrypto(crypto)
+    }
+
+    fun reloadUserCryptos()
+    {
+        if (user != null && user!!.cryptosList != null)
+        {
+            infoPanel.removeAllViews()
+            for (crypto in user!!.cryptosList!!)
+            {
+                addUserCryptoInfoRow(crypto)
+            }
+        }
+    }
+
+    fun addRealtimeDatabaseListeners(currentUser: User, cryptosList: List<Crypto>)
+    {
+        firebaseService.listenForUpdates(currentUser, object : RealtimeDataListener<User>
+        {
+            override fun onDataChange(updateData: User)
+            {
+                user = updateData
+                reloadUserCryptos()
+            }
+
+            override fun onError(exception: java.lang.Exception)
+            {
+                Log.e("Developer", "error", exception)
+                showGeneralServerErrorMessage()
+            }
+
+        })
+
+        firebaseService.listenForUpdates(cryptosList, object : RealtimeDataListener<Crypto>
+        {
+            override fun onDataChange(updateData: Crypto)
+            {
+                var pos = 0
+                for (crypto in cryptosAdapter.cryptosList)
+                {
+                    if (crypto.name.equals(updateData.name))
+                    {
+                        crypto.available = updateData.available
+                        cryptosAdapter.notifyItemChanged(pos)
+                        break
+                    }
+                    pos++
+                }
+
+            }
+
+            override fun onError(exception: java.lang.Exception)
+            {
+                Log.e("Developer", "error", exception)
+                showGeneralServerErrorMessage()
+            }
+
+        })
+    }
+
+    fun showGeneralServerErrorMessage()
+    {
+        Snackbar.make(fab, getString(R.string.error_while_connecting_to_the_server), Snackbar.LENGTH_LONG)
+                .setAction("Info", null).show()
+        generateCryptoCurrenciesRandom()
+    }
+
 }

@@ -11,4 +11,5 @@
   <string name="coin_info">%s %s</string>
   <string name="coin_icon">Coin icon</string>
   <string name="error_while_connecting_to_the_server">Error while connecting to the server</string>
+  <string name="username">username</string>
 </resources>

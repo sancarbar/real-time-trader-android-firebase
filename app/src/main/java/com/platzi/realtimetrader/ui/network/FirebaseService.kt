@@ -51,7 +51,10 @@ class FirebaseService(val firebaseFirestore: FirebaseFirestore)
         firebaseFirestore.collection(USERS_COLLECTION_NAME).document(id)
                 .get()
                 .addOnSuccessListener { result ->
-                    callback.onSuccess(result.toObject(User::class.java)!!)
+                    if (result.data == null)
+                        callback.onSuccess(null)
+                    else
+                        callback.onSuccess(result.toObject(User::class.java)!!)
                 }
                 .addOnFailureListener { exception ->
                     Log.w("Developer", "Error getting documents.", exception)
@@ -73,6 +76,50 @@ class FirebaseService(val firebaseFirestore: FirebaseFirestore)
                     if (callback != null)
                         callback.onFailed(exception)
                 }
+    }
+
+    fun updateCrypto(crypto: Crypto)
+    {
+        firebaseFirestore.collection(CRYPTO_COLLECTION_NAME).document(crypto.getDocumentId())
+                .update("available", crypto.available)
+    }
+
+    fun listenForUpdates(cryptos: List<Crypto>, listener: RealtimeDataListener<Crypto>)
+    {
+        val reference = firebaseFirestore.collection(CRYPTO_COLLECTION_NAME)
+        for (crypto in cryptos)
+        {
+            reference.document(crypto.getDocumentId()).addSnapshotListener { snapshot, e ->
+                if (e != null)
+                {
+                    listener.onError(e)
+                }
+
+                if (snapshot != null && snapshot.exists())
+                {
+                    listener.onDataChange(snapshot.toObject(Crypto::class.java)!!)
+                }
+            }
+        }
+    }
+
+    fun listenForUpdates(user: User, listener: RealtimeDataListener<User>)
+    {
+        val reference = firebaseFirestore.collection(USERS_COLLECTION_NAME)
+
+        reference.document(user.username).addSnapshotListener { snapshot, e ->
+            if (e != null)
+            {
+                listener.onError(e)
+            }
+
+            if (snapshot != null && snapshot.exists())
+            {
+                listener.onDataChange(snapshot.toObject(User::class.java)!!)
+            }
+        }
 
     }
+
+
 }

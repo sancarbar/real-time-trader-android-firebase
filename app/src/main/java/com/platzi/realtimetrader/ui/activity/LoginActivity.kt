@@ -11,6 +11,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.platzi.realtimetrader.R
 import com.platzi.realtimetrader.ui.model.User
+import com.platzi.realtimetrader.ui.network.Callback
 import com.platzi.realtimetrader.ui.network.CallbackVoid
 import com.platzi.realtimetrader.ui.network.FirebaseService
 import kotlinx.android.synthetic.main.activity_login.*
@@ -44,6 +45,7 @@ class LoginActivity : AppCompatActivity()
 
     fun onStartClicked(view: View)
     {
+        view.isEnabled = false
         auth.signInAnonymously()
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful)
@@ -51,22 +53,26 @@ class LoginActivity : AppCompatActivity()
                         // Login exitóso, actualizar la vista con la información del usuario
                         Log.d(TAG, "signInAnonymously:success")
                         val username = username.text.toString()
-                        val userDocument = User()
-                        userDocument.username = username
 
-                        firebaseService.setDocument(userDocument, "users", userDocument.username, object : CallbackVoid
+                        firebaseService.findUserById(username, object : Callback<User>
                         {
-                            override fun onSuccess()
+                            override fun onSuccess(result: User?)
                             {
-                                startMainActivity(username)
+
+                                if (result == null)
+                                {
+                                    val userDocument = User()
+                                    userDocument.username = username
+                                    saveUserAndStartMainActivity(userDocument, username, view)
+                                } else
+                                    startMainActivity(result.username)
                             }
 
-                            override fun onFailed(e: Exception)
+                            override fun onFailed(exception: Exception)
                             {
-                                Snackbar.make(view, getString(R.string.error_while_connecting_to_the_server), Snackbar.LENGTH_LONG)
-                                        .setAction("Info", null).show()
+                                Log.e("Developer", "error finding user", exception)
+                                view.isEnabled = true
                             }
-
 
                         })
 
@@ -77,9 +83,31 @@ class LoginActivity : AppCompatActivity()
                         Log.w(TAG, "signInAnonymously:failure", task.exception)
                         Toast.makeText(baseContext, "Authentication failed.",
                                 Toast.LENGTH_SHORT).show()
-
+                        view.isEnabled = true
                     }
                 }
+    }
+
+    private fun saveUserAndStartMainActivity(userDocument: User, username: String, view: View)
+    {
+        firebaseService.setDocument(userDocument, "users", userDocument.username, object : CallbackVoid
+        {
+            override fun onSuccess()
+            {
+                startMainActivity(username)
+            }
+
+            override fun onFailed(e: Exception)
+            {
+                showErrorMessage(view)
+            }
+        })
+    }
+
+    private fun showErrorMessage(view: View)
+    {
+        Snackbar.make(view, getString(R.string.error_while_connecting_to_the_server), Snackbar.LENGTH_LONG)
+                .setAction("Info", null).show()
     }
 
     private fun startMainActivity(username: String)

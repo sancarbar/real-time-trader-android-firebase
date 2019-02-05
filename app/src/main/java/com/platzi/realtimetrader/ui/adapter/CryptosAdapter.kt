@@ -3,6 +3,7 @@ package com.platzi.realtimetrader.ui.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -14,7 +15,7 @@ import com.squareup.picasso.Picasso
  * @author Santiago Carrillo
  * 1/29/19.
  */
-class CryptosAdapter : RecyclerView.Adapter<CryptosAdapter.ViewHolder>()
+class CryptosAdapter(val cryptosAdapterListener: CryptosAdapterListener) : RecyclerView.Adapter<CryptosAdapter.ViewHolder>()
 {
 
 
@@ -29,6 +30,12 @@ class CryptosAdapter : RecyclerView.Adapter<CryptosAdapter.ViewHolder>()
         holder.available.text =
                 context.getString(R.string.available_message, crypto.available.toString())
         Picasso.get().load(crypto.imageUrl).into(holder.image)
+
+        holder.buyButton.isEnabled = crypto.available > 0
+
+        holder.buyButton.setOnClickListener {
+            cryptosAdapterListener.onBuyCryptoClicked(crypto)
+        }
     }
 
 
@@ -47,9 +54,10 @@ class CryptosAdapter : RecyclerView.Adapter<CryptosAdapter.ViewHolder>()
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view)
     {
-
         var name = view.findViewById<TextView>(R.id.nameTextView)
         var available = view.findViewById<TextView>(R.id.availableTextView)
         var image = view.findViewById<ImageView>(R.id.image)
+        var buyButton = view.findViewById<Button>(R.id.buyButton)
+
     }
 }

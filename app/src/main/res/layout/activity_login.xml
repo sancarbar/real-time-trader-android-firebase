@@ -40,7 +40,7 @@
       android:layout_height="wrap_content"
       android:layout_margin="10dp"
       android:ems="10"
-      android:hint="@string/name"
+      android:hint="@string/username"
       android:inputType="textPersonName"
       android:padding="20dp"
       app:layout_constraintBottom_toBottomOf="parent"
