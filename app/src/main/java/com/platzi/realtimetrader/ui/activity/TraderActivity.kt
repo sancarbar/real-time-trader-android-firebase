@@ -127,13 +127,6 @@ class TraderActivity : AppCompatActivity(), CryptosAdapterListener
         recyclerView.adapter = cryptosAdapter
     }
 
-    fun addUserCryptoInfoRow(crypto: Crypto)
-    {
-        val view = LayoutInflater.from(this).inflate(R.layout.coin_info, infoPanel, false)
-        view.findViewById<TextView>(R.id.coinLabel).text = getString(R.string.coin_info, crypto.name, crypto.available.toString())
-        Picasso.get().load(crypto.imageUrl).into(view.findViewById<ImageView>(R.id.coinIcon))
-        infoPanel.addView(view)
-    }
 
     override fun onBuyCryptoClicked(crypto: Crypto)
     {
@@ -164,6 +157,14 @@ class TraderActivity : AppCompatActivity(), CryptosAdapterListener
                 addUserCryptoInfoRow(crypto)
             }
         }
+    }
+
+    fun addUserCryptoInfoRow(crypto: Crypto) {
+        val view = LayoutInflater.from(this).inflate(R.layout.coin_info, infoPanel, false)
+        view.findViewById<TextView>(R.id.coinLabel).text =
+                getString(R.string.coin_info, crypto.name, crypto.available.toString())
+        Picasso.get().load(crypto.imageUrl).into(view.findViewById<ImageView>(R.id.coinIcon))
+        infoPanel.addView(view)
     }
 
     fun addRealtimeDatabaseListeners(currentUser: User, cryptosList: List<Crypto>)
